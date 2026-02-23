@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>🧧 Admin — Lì Xì Platform</title>
+  <link rel="stylesheet" href="../admin.css"/>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-box">
+    <span class="login-logo">🧧</span>
+    <h1 class="login-title">Admin Panel</h1>
+    <p class="login-subtitle">Lì Xì Platform · Secure Access</p>
+    <form id="login-form" autocomplete="off">
+      <div class="login-field">
+        <label>Tên đăng nhập / Room ID</label>
+        <input type="text" id="login-user" placeholder="admin hoặc Room ID" autocomplete="username"/>
+      </div>
+      <div class="login-field">
+        <label>Mật khẩu</label>
+        <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"/>
+      </div>
+      <p class="login-error" id="login-error"></p>
+      <button type="submit" class="login-btn">🔐 Đăng nhập</button>
+    </form>
+    <p class="login-back"><a href="/">← Về trang chủ</a></p>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div id="admin-app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon" id="sb-room-emoji">🧧</span>
+      <div>
+        <div class="logo-text" id="sb-room-title">Lì Xì Platform</div>
+        <div class="logo-sub">Admin Dashboard</div>
+      </div>
+    </div>
+    <div class="room-id-badge" id="sb-room-id" style="display:none"></div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-label">Tổng quan</div>
+        <button class="nav-link active" data-tab="dashboard"><span class="nav-icon">📊</span><span class="nav-label">Dashboard</span></button>
+        <button class="nav-link" data-tab="notifications" style="position:relative"><span class="nav-icon">🔔</span><span class="nav-label">Thông báo</span><span id="notif-badge"></span></button>
+      </div>
+
+      <div class="nav-section" id="room-nav-section" style="display:none">
+        <div class="nav-section-label">Quản lý game</div>
+        <button class="nav-link" data-tab="envelopes"><span class="nav-icon">📋</span><span class="nav-label">Danh sách ô</span></button>
+        <button class="nav-link" data-tab="edit-envelopes"><span class="nav-icon">✏️</span><span class="nav-label">Sửa phong bì</span></button>
+        <button class="nav-link" data-tab="players"><span class="nav-icon">👥</span><span class="nav-label">Người chơi</span></button>
+        <button class="nav-link" data-tab="analytics"><span class="nav-icon">📈</span><span class="nav-label">Thống kê</span></button>
+        <button class="nav-link" data-tab="timeline"><span class="nav-icon">⏱</span><span class="nav-label">Lịch sử</span></button>
+      </div>
+
+      <div class="nav-section" id="room-settings-nav" style="display:none">
+        <div class="nav-section-label">Cài đặt</div>
+        <button class="nav-link" data-tab="settings-text"><span class="nav-icon">✍️</span><span class="nav-label">Nội dung</span></button>
+        <button class="nav-link" data-tab="settings-game"><span class="nav-icon">🎮</span><span class="nav-label">Game</span></button>
+        <button class="nav-link" data-tab="settings-dist"><span class="nav-icon">💰</span><span class="nav-label">Mệnh giá</span></button>
+        <button class="nav-link" data-tab="settings-messages"><span class="nav-icon">💬</span><span class="nav-label">Lời chúc</span></button>
+        <button class="nav-link" data-tab="settings-share"><span class="nav-icon">🔗</span><span class="nav-label">Chia sẻ</span></button>
+        <button class="nav-link" data-tab="settings-account"><span class="nav-icon">🔑</span><span class="nav-label">Tài khoản</span></button>
+      </div>
+
+      <div class="nav-section" id="master-nav" style="display:none">
+        <div class="nav-section-label">Master Admin</div>
+        <button class="nav-link" data-tab="rooms"><span class="nav-icon">🏠</span><span class="nav-label">Tất cả phòng</span></button>
+        <button class="nav-link" data-tab="master-tools"><span class="nav-icon">🛠</span><span class="nav-label">Công cụ</span></button>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar">A</div>
+        <div>
+          <div class="user-name" id="sb-username">Admin</div>
+          <div class="user-role" id="sb-role">Room Admin</div>
+        </div>
+        <button class="logout-btn" id="logout-btn" title="Đăng xuất">⏻</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <div class="top-bar">
+      <button class="icon-btn" id="menu-toggle" style="display:none">☰</button>
+      <h1 class="top-bar-title" id="top-bar-title">Dashboard</h1>
+      <div class="top-bar-actions">
+        <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+        <button class="icon-btn" id="refresh-btn" title="Làm mới">↺</button>
+        <button class="icon-btn" id="export-btn" title="Xuất CSV">📥</button>
+        <button class="action-btn action-btn-red" id="toggle-game-btn" style="display:none">🔴 Đóng game</button>
+      </div>
+    </div>
+
+    <div class="content-area">
+
+      <!-- GAME STATUS BAR -->
+      <div id="game-status-bar">
+        <div class="gs-dot" id="gs-dot"></div>
+        <span id="game-open-label">—</span>
+        <div class="share-links-bar">
+          <div class="share-link-item">
+            <span class="share-link-label">PHÒNG</span>
+            <span class="share-link-text" id="share-room-link">—</span>
+            <button class="action-btn action-btn-gold" style="padding:5px 10px;font-size:.68rem" onclick="copyLink('share-room-link')">Copy</button>
+          </div>
+          <div class="share-link-item">
+            <span class="share-link-label">ADMIN</span>
+            <span class="share-link-text" id="share-admin-link">—</span>
+            <button class="action-btn action-btn-gold" style="padding:5px 10px;font-size:.68rem" onclick="copyLink('share-admin-link')">Copy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ╔═══ DASHBOARD ═══╗ -->
+      <div id="tab-dashboard" class="tab-section active">
+        <div class="metrics-grid">
+          <div class="metric-card gold">
+            <span class="metric-icon">🧧</span>
+            <div class="metric-label">Tổng phong bì</div>
+            <div class="metric-value" id="m-total">—</div>
+            <div class="metric-sub">Toàn bộ ô trong game</div>
+          </div>
+          <div class="metric-card green">
+            <span class="metric-icon">✅</span>
+            <div class="metric-label">Đã mở</div>
+            <div class="metric-value" id="m-opened">—</div>
+            <div class="metric-trend up" id="m-pct-badge">0%</div>
+            <div class="metric-sub">Tỷ lệ hoàn thành</div>
+          </div>
+          <div class="metric-card blue">
+            <span class="metric-icon">⏳</span>
+            <div class="metric-label">Còn lại</div>
+            <div class="metric-value" id="m-pending">—</div>
+            <div class="metric-sub">Chưa được bốc</div>
+          </div>
+          <div class="metric-card red">
+            <span class="metric-icon">🔥</span>
+            <div class="metric-label">Ô đặc biệt</div>
+            <div class="metric-value" id="m-special-opened">—</div>
+            <div class="metric-sub">Đã mở / Tổng đặc biệt</div>
+          </div>
+          <div class="metric-card gold">
+            <span class="metric-icon">💰</span>
+            <div class="metric-label">Tổng hiển thị</div>
+            <div class="metric-value" id="m-display-total">—</div>
+            <div class="metric-sub">Nghìn đồng</div>
+          </div>
+          <div class="metric-card purple">
+            <span class="metric-icon">💎</span>
+            <div class="metric-label">Tổng thực</div>
+            <div class="metric-value" id="m-real-total">—</div>
+            <div class="metric-sub">Giá trị thực tế</div>
+          </div>
+          <div class="metric-card cyan">
+            <span class="metric-icon">👥</span>
+            <div class="metric-label">Người chơi</div>
+            <div class="metric-value" id="m-players">—</div>
+            <div class="metric-sub">Đã bốc</div>
+          </div>
+          <div class="metric-card green" style="display:flex;align-items:center;justify-content:center">
+            <div class="ring-wrap">
+              <svg width="100" height="100" viewBox="0 0 100 100">
+                <defs><linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#c9920a"/><stop offset="100%" stop-color="#f5c842"/></linearGradient></defs>
+                <circle class="ring-bg" cx="50" cy="50" r="36"/>
+                <circle class="ring-fill" id="ring-fill" cx="50" cy="50" r="36" transform="rotate(-90 50 50)"/>
+              </svg>
+              <div class="ring-text">
+                <span class="ring-pct" id="ring-pct">0%</span>
+                <span class="ring-lbl">TIẾN ĐỘ</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card-panel" style="margin-bottom:18px">
+          <div class="card-header">
+            <div>
+              <div class="section-title">Hành động nhanh</div>
+              <div class="section-sub">Kiểm soát game trong 1 click</div>
+            </div>
+          </div>
+          <div class="btn-actions-row">
+            <button class="action-btn action-btn-gold" id="new-game-btn">🎲 Tạo game mới</button>
+            <button class="action-btn action-btn-red" id="reset-game-btn">↺ Reset game</button>
+            <button class="action-btn action-btn-green" id="export-players-btn">📊 Xuất danh sách người chơi</button>
+            <button class="action-btn action-btn-blue" id="export-envelopes-btn">📋 Xuất danh sách phong bì</button>
+            <button class="action-btn action-btn-purple" id="share-room-btn">🔗 Chia sẻ phòng</button>
+            <button class="action-btn" id="clone-room-btn">📑 Nhân bản phòng</button>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="card-panel">
+            <div class="chart-title">Hoạt động gần đây</div>
+            <div id="timeline-container-mini" style="max-height:280px;overflow-y:auto">
+              <p style="color:var(--text-muted);font-size:.82rem;text-align:center;padding:20px">Chưa có dữ liệu</p>
+            </div>
+          </div>
+          <div class="card-panel">
+            <div class="chart-title">Top người chơi</div>
+            <div id="top-players-container" style="max-height:280px;overflow-y:auto">
+              <p style="color:var(--text-muted);font-size:.82rem;text-align:center;padding:20px">Chưa có dữ liệu</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ╔═══ ENVELOPES TABLE ═══╗ -->
+      <div id="tab-envelopes" class="tab-section">
+        <div class="card-panel">
+          <div class="card-header">
+            <div>
+              <div class="section-title">Danh sách phong bì</div>
+              <div class="section-sub">Xem & quản lý từng ô lì xì</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <select class="filter-btn" id="env-filter" style="padding:6px 12px;cursor:pointer;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--text-secondary);border-radius:8px;outline:none;font-family:'DM Sans',sans-serif;font-size:.76rem">
+                <option value="all">Tất cả</option>
+                <option value="opened">Đã mở</option>
+                <option value="pending">Chưa mở</option>
+                <option value="special">Đặc biệt</option>
+              </select>
+              <input class="search-input" id="env-search" type="text" placeholder="Tìm kiếm..."/>
+              <button class="action-btn action-btn-red" id="batch-reset-btn">↺ Reset ô đã chọn</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th><input type="checkbox" id="select-all-env" title="Chọn tất cả" style="accent-color:var(--gold-500)"/></th>
+                  <th>Ô #</th><th>Loại</th><th>Hiển thị</th><th>Thực tế</th>
+                  <th>Trạng thái</th><th>Người bốc</th><th>Giờ mở</th><th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="env-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ╔═══ EDIT ENVELOPES ═══╗ -->
+      <div id="tab-edit-envelopes" class="tab-section">
+        <div class="card-panel">
+          <div class="card-header">
+            <div>
+              <div class="section-title">Chỉnh sửa phong bì</div>
+              <div class="section-sub">Sửa mệnh giá và trạng thái từng ô</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="action-btn action-btn-gold" id="save-all-envs-btn">💾 Lưu tất cả</button>
+              <button class="action-btn" id="shuffle-envs-btn">🔀 Trộn ngẫu nhiên</button>
+              <button class="action-btn action-btn-blue" id="auto-fill-btn">✨ Tự động điền</button>
+            </div>
+          </div>
+          <div class="env-bulk-grid" id="env-bulk-grid"></div>
+        </div>
+      </div>
+
+      <!-- ╔═══ PLAYERS ═══╗ -->
+      <div id="tab-players" class="tab-section">
+        <div class="card-panel">
+          <div class="card-header">
+            <div>
+              <div class="section-title">Người chơi</div>
+              <div class="section-sub">Danh sách người đã bốc lì xì</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <input class="search-input" id="player-search" type="text" placeholder="Tìm tên..."/>
+              <button class="action-btn action-btn-gold" id="export-btn2">📥 Xuất CSV</button>
+            </div>
+          </div>
+          <div id="players-list" style="max-height:600px;overflow-y:auto"></div>
+        </div>
+      </div>
+
+      <!-- ╔═══ ANALYTICS ═══╗ -->
+      <div id="tab-analytics" class="tab-section">
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-title">Phân phối mệnh giá đã mở</div>
+            <div id="chart-dist"></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Hoạt động theo giờ</div>
+            <div id="chart-hourly"></div>
+          </div>
+        </div>
+        <div class="card-panel">
+          <div class="chart-title">Ô đặc biệt</div>
+          <div id="special-list"></div>
+        </div>
+      </div>
+
+      <!-- ╔═══ TIMELINE ═══╗ -->
+      <div id="tab-timeline" class="tab-section">
+        <div class="card-panel">
+          <div class="card-header">
+            <div class="section-title">Lịch sử bốc lì xì</div>
+            <button class="action-btn action-btn-red" id="clear-history-btn">🗑 Xóa lịch sử</button>
+          </div>
+          <div id="timeline-container" style="max-height:600px;overflow-y:auto"></div>
+        </div>
+      </div>
+
+      <!-- ╔═══ NOTIFICATIONS ═══╗ -->
+      <div id="tab-notifications" class="tab-section">
+        <div class="card-panel">
+          <div class="card-header">
+            <div class="section-title">Thông báo realtime</div>
+            <button class="action-btn action-btn-red" onclick="clearNotifs()">🗑 Xóa tất cả</button>
+          </div>
+          <div id="notif-list"></div>
+        </div>
+      </div>
+
+      <!-- ╔═══ SETTINGS: TEXT ═══╗ -->
+      <div id="tab-settings-text" class="tab-section">
+        <div class="settings-section">
+          <div class="settings-title">Nội dung hiển thị</div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Tiêu đề phòng</label><input class="form-input" id="cfg-title" type="text" placeholder="Lì Xì Tết 2025"/></div>
+            <div class="form-group"><label class="form-label">Phụ đề</label><input class="form-input" id="cfg-subtitle" type="text" placeholder="Chúc mừng năm mới"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Chân trang</label><input class="form-input" id="cfg-footer" type="text"/></div>
+          <div class="form-group"><label class="form-label">Nhãn section phong bì</label><input class="form-input" id="cfg-section-label" type="text"/></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Tiêu đề game đóng</label><input class="form-input" id="cfg-closed-title" type="text"/></div>
+            <div class="form-group"><label class="form-label">Thông báo game đóng</label><input class="form-input" id="cfg-closed-msg" type="text"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Tên chủ phòng</label><input class="form-input" id="cfg-host-name" type="text" placeholder="Tên của bạn"/></div>
+          <div class="form-group"><label class="form-label">Emoji phòng</label><input class="form-input" id="cfg-emoji" type="text" placeholder="🧧" style="font-size:1.5rem"/></div>
+          <button class="action-btn action-btn-gold" id="save-text-btn">💾 Lưu nội dung</button>
+        </div>
+      </div>
+
+      <!-- ╔═══ SETTINGS: GAME ═══╗ -->
+      <div id="tab-settings-game" class="tab-section">
+        <div class="settings-section">
+          <div class="settings-title">Cài đặt game</div>
+          <label class="form-check"><input type="checkbox" id="cfg-game-open"/><span class="form-check-label">🟢 Game đang mở (cho phép bốc lì xì)</span></label>
+          <label class="form-check"><input type="checkbox" id="cfg-show-players"/><span class="form-check-label">👥 Hiển thị số người chơi</span></label>
+          <label class="form-check"><input type="checkbox" id="cfg-show-value"/><span class="form-check-label">💰 Hiển thị tổng đã bốc</span></label>
+          <label class="form-check"><input type="checkbox" id="cfg-one-per-person"/><span class="form-check-label">🔒 Mỗi người chỉ bốc 1 lần</span></label>
+          <div class="form-group" style="margin-top:14px"><label class="form-label">Số confetti mỗi lần</label><input class="form-input" id="cfg-confetti" type="number" value="80" min="0" max="300" style="max-width:120px"/></div>
+          <div class="form-group"><label class="form-label">Màu nền tùy chỉnh (hex, để trống = mặc định)</label><input class="form-input" id="cfg-bg-color" type="text" placeholder="#060004" style="max-width:200px"/></div>
+          <button class="action-btn action-btn-gold" id="save-game-btn">💾 Lưu cài đặt game</button>
+        </div>
+      </div>
+
+      <!-- ╔═══ SETTINGS: DIST ═══╗ -->
+      <div id="tab-settings-dist" class="tab-section">
+        <div class="settings-section">
+          <div class="settings-title">Cấu hình mệnh giá</div>
+          <div class="form-group">
+            <label class="form-label">Tổng số ô</label>
+            <input class="form-input" id="cfg-total-envs" type="number" value="20" min="5" max="200" style="max-width:120px"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phân phối mệnh giá thường (số lượng mỗi loại)</label>
+            <div class="dist-grid" id="dist-grid"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Số ô đặc biệt</label>
+            <input class="form-input" id="cfg-num-specials" type="number" value="2" min="0" max="10" style="max-width:120px"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mệnh giá thực các ô đặc biệt (k)</label>
+            <div id="special-val-inputs" class="special-val-grid"></div>
+          </div>
+          <button class="action-btn action-btn-gold" id="save-dist-btn">💾 Lưu cấu hình mệnh giá</button>
+        </div>
+      </div>
+
+      <!-- ╔═══ SETTINGS: MESSAGES ═══╗ -->
+      <div id="tab-settings-messages" class="tab-section">
+        <div class="settings-section">
+          <div class="settings-title">Lời chúc (mỗi dòng = 1 lời chúc ngẫu nhiên)</div>
+          <div class="form-group"><label class="form-label">Lời chúc mệnh giá thấp (≤5k)</label><textarea class="form-input" id="msg-low" rows="4"></textarea></div>
+          <div class="form-group"><label class="form-label">Lời chúc mệnh giá trung (6–15k)</label><textarea class="form-input" id="msg-mid" rows="4"></textarea></div>
+          <div class="form-group"><label class="form-label">Lời chúc mệnh giá cao (≥16k)</label><textarea class="form-input" id="msg-high" rows="4"></textarea></div>
+          <div class="form-group"><label class="form-label">Lời chúc ô đặc biệt</label><textarea class="form-input" id="msg-special" rows="3" placeholder="🎊 Ô đặc biệt! Chúc mừng bạn đã trúng giải lớn!"></textarea></div>
+          <button class="action-btn action-btn-gold" id="save-msg-btn">💾 Lưu lời chúc</button>
+        </div>
+      </div>
+
+      <!-- ╔═══ SETTINGS: SHARE ═══╗ -->
+      <div id="tab-settings-share" class="tab-section">
+        <div class="settings-section">
+          <div class="settings-title">Link chia sẻ</div>
+          <div class="form-group">
+            <label class="form-label">Link phòng chơi</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input class="form-input" id="link-room" readonly style="flex:1"/>
+              <button class="action-btn action-btn-gold" onclick="copyInput('link-room')">📋 Copy</button>
+              <a class="action-btn" id="link-room-open" href="#" target="_blank">🔗 Mở</a>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Link admin</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input class="form-input" id="link-admin" readonly style="flex:1"/>
+              <button class="action-btn action-btn-gold" onclick="copyInput('link-admin')">📋 Copy</button>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:20px">
+            <label class="form-label">QR Code phòng chơi</label>
+            <div id="qr-container" style="margin-top:10px;background:white;display:inline-block;padding:12px;border-radius:12px">
+              <div id="qr-placeholder" style="width:200px;height:200px;display:flex;align-items:center;justify-content:center;color:#888;font-size:.8rem;text-align:center">QR sẽ hiện khi chọn phòng</div>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:16px">
+            <label class="form-label">Tạo link tùy chỉnh (custom slug)</label>
+            <div style="display:flex;gap:8px">
+              <input class="form-input" id="cfg-custom-slug" type="text" placeholder="ten-phong-tuy-chinh" style="flex:1"/>
+              <button class="action-btn action-btn-blue" onclick="saveCustomSlug()">💾 Lưu</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ╔═══ SETTINGS: ACCOUNT ═══╗ -->
+      <div id="tab-settings-account" class="tab-section">
+        <div class="settings-section">
+          <div class="settings-title">Đổi mật khẩu admin</div>
+          <div class="form-group"><label class="form-label">Mật khẩu mới</label><input class="form-input" id="cfg-new-pass" type="password" placeholder="Nhập mật khẩu mới"/></div>
+          <div class="form-group"><label class="form-label">Xác nhận mật khẩu</label><input class="form-input" id="cfg-confirm-pass" type="password" placeholder="Nhập lại mật khẩu"/></div>
+          <button class="action-btn action-btn-gold" id="save-account-btn">🔑 Đổi mật khẩu</button>
+        </div>
+        <div class="settings-section" style="margin-top:16px">
+          <div class="settings-title">Nguy hiểm</div>
+          <div class="btn-actions-row">
+            <button class="action-btn action-btn-red" id="delete-all-events-btn">🗑 Xóa toàn bộ lịch sử</button>
+            <button class="action-btn action-btn-red" id="delete-room-btn">💣 Xóa phòng</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ╔═══ ROOMS (MASTER ADMIN) ═══╗ -->
+      <div id="tab-rooms" class="tab-section">
+        <div class="card-panel">
+          <div class="card-header">
+            <div>
+              <div class="section-title">Tất cả phòng lì xì</div>
+              <div class="section-sub">Quản lý toàn bộ hệ thống</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <input class="search-input" id="room-search" type="text" placeholder="Tìm phòng..."/>
+              <button class="action-btn action-btn-green" id="load-more-rooms-btn">Tải thêm</button>
+            </div>
+          </div>
+          <div id="rooms-picker-grid" class="room-picker-grid"></div>
+        </div>
+      </div>
+
+      <!-- ╔═══ MASTER TOOLS ═══╗ -->
+      <div id="tab-master-tools" class="tab-section">
+        <div class="settings-section">
+          <div class="settings-title">Công cụ Master Admin</div>
+          <div class="btn-actions-row">
+            <button class="action-btn action-btn-red" id="close-all-rooms-btn">🔴 Đóng tất cả phòng</button>
+            <button class="action-btn action-btn-green" id="open-all-rooms-btn">🟢 Mở tất cả phòng</button>
+            <button class="action-btn action-btn-blue" id="export-all-btn">📥 Xuất tất cả dữ liệu</button>
+          </div>
+        </div>
+        <div class="settings-section" style="margin-top:16px">
+          <div class="settings-title">Thống kê hệ thống</div>
+          <div id="system-stats" class="metrics-grid"></div>
+        </div>
+      </div>
+
+    </div><!-- /content-area -->
+  </main>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="../config.js"></script>
+<script src="../admin.js"></script>
+</body>
+</html>
