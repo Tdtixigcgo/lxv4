@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/room/:roomId", "destination": "/room/index.html" },
+    { "source": "/admin/:roomId", "destination": "/admin/index.html" },
+    { "source": "/admin",        "destination": "/admin/index.html" },
+    { "source": "/create",       "destination": "/create/index.html" }
+  ]
+}
