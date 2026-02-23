@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>🧧 Lì Xì Online — Tạo phòng lì xì miễn phí</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div class="bg-layer"></div>
+<div class="bg-pattern"></div>
+
+<!-- LOADING -->
+<div id="loading-screen">
+  <div class="ld-logo">🧧</div>
+  <p class="ld-title">Lì Xì Online</p>
+  <p class="ld-msg">Đang tải...</p>
+  <div class="ld-bar"><div class="ld-fill"></div></div>
+</div>
+
+<!-- HERO -->
+<div class="page-wrapper" id="main-page" style="display:none">
+  <div class="container" style="display:flex;flex-direction:column;align-items:center">
+
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+      <span class="hero-emoji">🧧</span>
+      <h1 class="hero-title">Lì Xì Online</h1>
+      <p class="hero-sub">Tạo phòng lì xì may mắn cho gia đình & bạn bè. Realtime, đẹp mắt, miễn phí hoàn toàn.</p>
+      <div class="hero-actions">
+        <button class="btn-gold" id="open-create-btn">🎊 Tạo phòng lì xì</button>
+        <a class="btn-ghost" href="/admin">🔐 Admin panel</a>
+      </div>
+
+      <!-- FEATURES -->
+      <div class="features-grid">
+        <div class="feature-card">
+          <span class="fc-icon">⚡</span>
+          <div class="fc-title">Realtime tức thì</div>
+          <div class="fc-desc">Mở ô là cập nhật ngay trên tất cả màn hình — không cần F5.</div>
+        </div>
+        <div class="feature-card">
+          <span class="fc-icon">🔥</span>
+          <div class="fc-title">Ô đặc biệt bí mật</div>
+          <div class="fc-desc">Hiện 10k nhưng thực 500k. Admin kiểm soát toàn bộ mệnh giá.</div>
+        </div>
+        <div class="feature-card">
+          <span class="fc-icon">🛡</span>
+          <div class="fc-title">Admin 100% quyền hạn</div>
+          <div class="fc-desc">Sửa từng ô, reset, clone phòng, xuất báo cáo CSV, xem QR code.</div>
+        </div>
+        <div class="feature-card">
+          <span class="fc-icon">📱</span>
+          <div class="fc-title">Mọi thiết bị</div>
+          <div class="fc-desc">Đẹp trên điện thoại, tablet, máy tính. Chia sẻ link là chơi ngay.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROOMS LIST -->
+    <section class="rooms-section" id="rooms-section" style="display:none">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h2 class="section-heading">Phòng đang hoạt động</h2>
+          <p class="section-desc">Các phòng lì xì gần đây — click để vào bốc</p>
+        </div>
+        <button class="btn-gold" id="open-create-btn2" style="padding:12px 24px;font-size:.85rem">+ Tạo phòng mới</button>
+      </div>
+      <div class="rooms-grid" id="rooms-grid">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </div>
+    </section>
+
+    <footer class="site-footer" style="width:100%;text-align:center;margin-top:20px">
+      <p style="font-size:.7rem;color:rgba(245,200,66,.18);letter-spacing:4px;font-family:'DM Mono',monospace">✦ Lì Xì Platform v4 · Made with ❤️ ✦</p>
+    </footer>
+  </div>
+</div>
+
+<!-- CREATE ROOM MODAL -->
+<div id="create-modal">
+  <div class="create-card">
+    <div class="create-header">
+      <span class="create-header-title">🎊 Tạo phòng lì xì mới</span>
+      <button class="create-close" id="create-close-btn">✕</button>
+    </div>
+    <div class="create-body">
+
+      <!-- STEP 1: Thông tin phòng -->
+      <div class="create-step">
+        <div class="create-step-title">Thông tin phòng</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tên phòng lì xì</label>
+            <input class="form-input" id="cr-title" type="text" placeholder="Lì Xì Tết 2025" maxlength="60"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phụ đề</label>
+            <input class="form-input" id="cr-subtitle" type="text" placeholder="Chúc mừng năm mới 🌸" maxlength="80"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tên chủ phòng (tùy chọn)</label>
+            <input class="form-input" id="cr-host" type="text" placeholder="Họ tên của bạn" maxlength="40"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Emoji phòng</label>
+            <input class="form-input" id="cr-emoji" type="text" placeholder="🧧" maxlength="4" style="font-size:1.4rem"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mật khẩu admin</label>
+          <input class="form-input" id="cr-pass" type="password" placeholder="Đặt mật khẩu để quản lý phòng"/>
+        </div>
+      </div>
+
+      <!-- STEP 2: Cấu hình mệnh giá -->
+      <div class="create-step">
+        <div class="create-step-title">Cấu hình phong bì</div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label class="form-label">Tổng số ô</label>
+            <input class="form-input" id="cr-total" type="number" value="20" min="5" max="200"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Số ô đặc biệt</label>
+            <input class="form-input" id="cr-specials" type="number" value="2" min="0" max="10" id="cr-specials"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confetti (0 = tắt)</label>
+            <input class="form-input" id="cr-confetti" type="number" value="80" min="0" max="300"/>
+          </div>
+        </div>
+
+        <label class="form-label" style="margin-bottom:8px">Phân phối mệnh giá (số lượng mỗi loại)</label>
+        <div class="value-config-grid" id="cr-dist-grid">
+          <div class="value-item"><span class="value-item-label">1k</span><input class="value-item-input" type="number" id="cd-1" value="2" min="0" max="50"/></div>
+          <div class="value-item"><span class="value-item-label">2k</span><input class="value-item-input" type="number" id="cd-2" value="2" min="0" max="50"/></div>
+          <div class="value-item"><span class="value-item-label">3k</span><input class="value-item-input" type="number" id="cd-3" value="2" min="0" max="50"/></div>
+          <div class="value-item"><span class="value-item-label">5k</span><input class="value-item-input" type="number" id="cd-5" value="3" min="0" max="50"/></div>
+          <div class="value-item"><span class="value-item-label">10k</span><input class="value-item-input" type="number" id="cd-10" value="4" min="0" max="50"/></div>
+          <div class="value-item"><span class="value-item-label">15k</span><input class="value-item-input" type="number" id="cd-15" value="2" min="0" max="50"/></div>
+          <div class="value-item"><span class="value-item-label">20k</span><input class="value-item-input" type="number" id="cd-20" value="3" min="0" max="50"/></div>
+          <div class="value-item"><span class="value-item-label">50k</span><input class="value-item-input" type="number" id="cd-50" value="0" min="0" max="50"/></div>
+          <div class="value-item"><span class="value-item-label">100k</span><input class="value-item-input" type="number" id="cd-100" value="0" min="0" max="50"/></div>
+        </div>
+
+        <label class="form-label" style="margin-top:14px;margin-bottom:8px">Mệnh giá thực ô đặc biệt (k)</label>
+        <div id="cr-special-inputs" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="form-group"><label class="form-label">Giải đặc biệt 1</label><input class="form-input" id="csv-0" type="number" value="200" min="1"/></div>
+          <div class="form-group"><label class="form-label">Giải đặc biệt 2</label><input class="form-input" id="csv-1" type="number" value="500" min="1"/></div>
+        </div>
+      </div>
+
+      <p class="cr-err" id="cr-err" style="color:rgba(255,100,100,.75);font-size:.8rem;min-height:18px;margin-bottom:10px"></p>
+      <button class="create-submit" id="cr-submit-btn">🎲 Tạo phòng lì xì ngay!</button>
+
+      <!-- SUCCESS -->
+      <div class="success-box" id="cr-success" style="display:none">
+        <p class="success-title">✅ Tạo phòng thành công!</p>
+        <div class="link-row">
+          <div class="link-label">🎊 Link phòng chơi (chia sẻ cho mọi người)</div>
+          <div class="link-box">
+            <span class="link-text" id="cr-room-link">—</span>
+            <button class="copy-btn" onclick="copyText('cr-room-link')">Copy</button>
+          </div>
+        </div>
+        <div class="link-row">
+          <div class="link-label">🔐 Link admin (giữ bí mật)</div>
+          <div class="link-box">
+            <span class="link-text" id="cr-admin-link">—</span>
+            <button class="copy-btn" onclick="copyText('cr-admin-link')">Copy</button>
+          </div>
+        </div>
+        <p class="hint-note">⚠ Lưu link admin lại ngay! Bạn sẽ cần nó để quản lý phòng.</p>
+        <div class="success-actions">
+          <a class="btn-gold" id="cr-go-room" href="#" style="padding:12px 22px;font-size:.88rem">🎊 Vào phòng ngay</a>
+          <a class="btn-ghost" id="cr-go-admin" href="#" style="padding:12px 22px;font-size:.88rem">⚙️ Admin panel</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+'use strict';
+let sb;
+const $ = id => document.getElementById(id);
+
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+
+// ── BOOT ──
+document.addEventListener('DOMContentLoaded', async () => {
+  sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  await loadRooms();
+  hideLoading();
+
+  $('open-create-btn').onclick  = () => openCreate();
+  $('open-create-btn2').onclick = () => openCreate();
+  $('create-close-btn').onclick = () => closeCreate();
+  $('cr-submit-btn').onclick    = () => createRoom();
+
+  $('cr-specials').addEventListener('input', () => buildSpecialInputs());
+  document.getElementById('create-modal').addEventListener('click', e => {
+    if(e.target.id==='create-modal') closeCreate();
+  });
+});
+
+function hideLoading(){
+  const el=$('loading-screen');
+  el.classList.add('hidden');
+  setTimeout(()=>{el.style.display='none'; $('main-page').style.display='flex';},600);
+}
+
+// ── LOAD ROOMS ──
+async function loadRooms(){
+  const {data} = await sb.from('rooms')
+    .select('id,title,host_name,emoji,is_open,envelope_count,opened_count,created_at')
+    .order('created_at',{ascending:false}).limit(30);
+  if(!data||!data.length) return;
+  $('rooms-section').style.display='block';
+  renderRooms(data);
+}
+
+function renderRooms(rooms){
+  const g=$('rooms-grid');
+  if(!rooms.length){
+    g.innerHTML='<div class="empty-state"><span class="empty-state-icon">🧧</span><p>Chưa có phòng nào. Hãy tạo phòng đầu tiên!</p></div>';
+    return;
+  }
+  g.innerHTML=rooms.map(r=>`
+    <a class="room-card" href="/room/${r.id}">
+      <div class="rc-top">
+        <span class="rc-emoji">${r.emoji||'🧧'}</span>
+        <span class="rc-badge ${r.is_open?'open':'closed'}">${r.is_open?'🟢 MỞ':'🔴 ĐÓNG'}</span>
+      </div>
+      <div class="rc-title">${escHtml(r.title||'Phòng Lì Xì')}</div>
+      <div class="rc-host">${r.host_name?'👤 '+escHtml(r.host_name):''}</div>
+      <div class="rc-stats">
+        <span class="rc-stat">🧧 ${r.envelope_count||0} ô</span>
+        <span class="rc-stat">✅ ${r.opened_count||0} đã mở</span>
+        <span class="rc-stat">📅 ${new Date(r.created_at).toLocaleDateString('vi-VN')}</span>
+      </div>
+    </a>`).join('');
+}
+
+// ── CREATE MODAL ──
+function openCreate(){
+  $('create-modal').classList.add('show');
+  $('cr-success').style.display='none';
+  $('cr-err').textContent='';
+  $('cr-submit-btn').style.display='block';
+  buildSpecialInputs();
+  setTimeout(()=>$('cr-title').focus(),200);
+}
+function closeCreate(){ $('create-modal').classList.remove('show'); }
+
+function buildSpecialInputs(){
+  const n=parseInt($('cr-specials').value)||0;
+  const c=$('cr-special-inputs');
+  c.innerHTML=Array.from({length:Math.min(n,10)},(_,i)=>
+    `<div class="form-group"><label class="form-label">Giải đặc biệt ${i+1} (k)</label><input class="form-input" id="csv-${i}" type="number" value="${(i+1)*200}" min="1"/></div>`
+  ).join('');
+  c.style.gridTemplateColumns = n<=2 ? '1fr 1fr' : 'repeat(auto-fill,minmax(130px,1fr))';
+}
+
+function copyText(id){
+  const el=$(id); if(!el) return;
+  navigator.clipboard.writeText(el.textContent||el.value);
+  el.style.color='var(--green)';
+  setTimeout(()=>el.style.color='',1500);
+}
+
+// ── CREATE ROOM ──
+async function createRoom(){
+  const btn=$('cr-submit-btn');
+  const title=($('cr-title').value.trim())||'Lì Xì Tết 2025';
+  const subtitle=$('cr-subtitle').value.trim();
+  const host=$('cr-host').value.trim();
+  const emoji=$('cr-emoji').value.trim()||'🧧';
+  const pass=$('cr-pass').value;
+  const total=parseInt($('cr-total').value)||20;
+  const nSpec=parseInt($('cr-specials').value)||0;
+  const confetti=parseInt($('cr-confetti').value)||80;
+
+  if(!pass||pass.length<4){$('cr-err').textContent='⚠ Mật khẩu phải ít nhất 4 ký tự';return;}
+
+  btn.disabled=true; btn.textContent='⏳ Đang tạo phòng...';
+  $('cr-err').textContent='';
+
+  // Build distribution
+  const dist={};
+  [1,2,3,5,10,15,20,50,100].forEach(v=>{
+    const n=parseInt($(`cd-${v}`)?.value)||0;
+    if(n>0) dist[v]=n;
+  });
+  const specialValues=Array.from({length:nSpec},(_,i)=>parseInt($(`csv-${i}`)?.value)||(i+1)*200);
+
+  // Generate room ID
+  const roomId=Math.random().toString(36).substring(2,10).toUpperCase();
+  const passHash=btoa(unescape(encodeURIComponent(pass+':lixi_salt_2025')));
+
+  // Insert room
+  const{error:re}=await sb.from('rooms').insert({
+    id:roomId, title, subtitle, host_name:host||null, emoji,
+    pass_hash:passHash, is_open:true, envelope_count:total, opened_count:0,
+    config:{distribution:dist,totalEnvelopes:total,specialValues,confettiCount:confetti,showPlayerCount:true,showValue:true,onePerPerson:true}
+  });
+  if(re){$('cr-err').textContent='❌ '+re.message;btn.disabled=false;btn.textContent='🎲 Tạo phòng lì xì ngay!';return;}
+
+  // Generate envelopes
+  let pool=[];
+  Object.entries(dist).forEach(([v,c])=>{for(let i=0;i<c;i++) pool.push(parseInt(v));});
+  while(pool.length<total-specialValues.length) pool.push(10);
+  pool=shuffle(pool).slice(0,total-specialValues.length);
+
+  const svShuffled=shuffle([...specialValues]);
+  const allPos=shuffle(Array.from({length:total},(_,i)=>i));
+  const spPos=new Set(allPos.slice(0,specialValues.length));
+
+  const rows=[];
+  let ni=0,si=0;
+  for(let i=0;i<total;i++){
+    if(spPos.has(i)){
+      const displayVals=Object.keys(dist).map(Number).filter(v=>v<=20);
+      const display=displayVals[Math.floor(Math.random()*displayVals.length)]||10;
+      rows.push({room_id:roomId,position:i,display_value:display,real_value:svShuffled[si%svShuffled.length],is_special:true,opened:false});
+      si++;
+    }else{
+      rows.push({room_id:roomId,position:i,display_value:pool[ni%pool.length]||10,real_value:pool[ni%pool.length]||10,is_special:false,opened:false});
+      ni++;
+    }
+  }
+
+  const{error:ee}=await sb.from('envelopes').insert(rows);
+  if(ee){$('cr-err').textContent='❌ '+ee.message;btn.disabled=false;btn.textContent='🎲 Tạo phòng lì xì ngay!';return;}
+
+  // Show success
+  btn.style.display='none';
+  const base=location.origin;
+  $('cr-room-link').textContent=`${base}/room/${roomId}`;
+  $('cr-admin-link').textContent=`${base}/admin/${roomId}`;
+  $('cr-go-room').href=`${base}/room/${roomId}`;
+  $('cr-go-admin').href=`${base}/admin/${roomId}`;
+  $('cr-success').style.display='block';
+
+  // Reload rooms list
+  loadRooms();
+}
+</script>
+</body>
+</html>
