@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title id="page-title">🧧 Lì Xì Online</title>
+  <link rel="stylesheet" href="../style.css"/>
+  <style>#greeting-bar{display:none}#already-opened-banner{display:none}</style>
+</head>
+<body>
+<div class="bg-layer"></div>
+<div class="bg-pattern"></div>
+<div id="loading-screen">
+  <div class="ld-logo">🧧</div>
+  <p class="ld-title" id="ld-title">Lì Xì Online</p>
+  <p class="ld-msg" id="ld-msg">Đang kết nối...</p>
+  <div class="ld-bar"><div class="ld-fill"></div></div>
+  <p class="ld-err" id="ld-err"></p>
+</div>
+<div id="sync-indicator">
+  <span class="sync-dot" id="sync-dot"></span>
+  <span class="sync-lbl" id="sync-lbl">Kết nối</span>
+</div>
+<div id="name-modal">
+  <div class="name-card">
+    <span class="nc-emoji" id="nc-emoji">🧧</span>
+    <h1 class="nc-title" id="nc-title">Lì Xì Tết 2025</h1>
+    <p class="nc-sub" id="nc-sub">Chúc mừng năm mới</p>
+    <p class="nc-host" id="nc-host" style="display:none"></p>
+    <p class="nc-label">Nhập tên để bốc lì xì</p>
+    <input class="nc-input" id="nm-input" type="text" placeholder="Tên của bạn..." maxlength="40" autocomplete="off"/>
+    <p class="nc-err" id="nm-err"></p>
+    <button class="nc-btn" id="nm-btn">🎊 Bốc lì xì thôi!</button>
+  </div>
+</div>
+<div id="game-closed-overlay">
+  <div class="gc-card">
+    <span class="gc-icon">🔒</span>
+    <h2 class="gc-title" id="gc-title">Game đã đóng</h2>
+    <p class="gc-msg" id="gc-msg">Phòng lì xì này hiện không mở. Vui lòng liên hệ chủ phòng!</p>
+    <div style="margin-top:24px"><a href="/" style="color:rgba(245,200,66,.4);font-size:.82rem;text-decoration:none">← Về trang chủ</a></div>
+  </div>
+</div>
+<div id="already-opened-banner">
+  <span>🧧</span>
+  <span id="banner-text">Bạn đã bốc rồi!</span>
+</div>
+<div class="page-wrapper">
+  <div class="container">
+    <header class="site-header">
+      <span class="header-ornament">🏮 ✦ 🧧 ✦ 🏮</span>
+      <h1 class="site-title" id="site-title">Lì Xì Tết 2025</h1>
+      <p class="site-subtitle" id="site-subtitle">Chúc mừng năm mới</p>
+      <div class="host-badge" id="host-badge" style="display:none">
+        <span>👤 Chủ phòng:</span><strong id="host-name-display"></strong>
+      </div>
+      <div class="gold-divider"></div>
+    </header>
+    <div id="greeting-bar">
+      <span class="greeting-text">Xin chào <strong id="greeting-name"></strong> 🌸 · Chọn một ô may mắn!</span>
+    </div>
+    <div class="stats-bar" role="status">
+      <div class="stat-chip"><span class="stat-icon">🧧</span>Đã bốc: <span class="stat-val" id="stat-opened">0</span>/<span class="stat-val" id="stat-total">—</span></div>
+      <div class="stat-chip"><span class="stat-icon">💰</span>Tổng: <span class="stat-val" id="stat-amount">0</span>k</div>
+      <div class="stat-chip" id="stat-players-chip"><span class="stat-icon">👥</span>Người chơi: <span class="stat-val" id="stat-players">0</span></div>
+    </div>
+    <section aria-label="Phong bì lì xì">
+      <p class="section-label" id="section-label">✦ Chọn một phong bì may mắn ✦</p>
+      <div class="envelope-grid" id="envelope-grid" role="list"></div>
+    </section>
+    <footer class="site-footer">
+      <p id="footer-text">✦ Chúc mừng năm mới · An khang thịnh vượng ✦</p>
+      <p style="margin-top:10px"><a href="/" style="color:rgba(245,200,66,.15);font-size:.68rem;text-decoration:none">← Tạo phòng lì xì của riêng bạn</a></p>
+    </footer>
+  </div>
+</div>
+<div class="reveal-overlay" id="reveal-overlay">
+  <div class="reveal-card">
+    <span class="reveal-big-emoji" id="reveal-emoji">🧧</span>
+    <p class="reveal-label">Lì Xì Của Bạn</p>
+    <div class="reveal-amount" id="reveal-amount">0</div>
+    <p class="reveal-unit">nghìn đồng</p>
+    <p class="reveal-message" id="reveal-message"></p>
+    <button class="reveal-close-btn" id="reveal-close-btn">Cảm ơn! 🌸</button>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="../config.js"></script>
+<script>
+'use strict';
+const ROOM_ID=location.pathname.split('/').filter(Boolean)[1]||'';
+const SESSION_KEY='lixi_name_'+ROOM_ID;
+let CFG={confettiCount:80,showPlayerCount:true,messages:{low:['Năm mới vạn sự như ý! 🌸'],mid:['Phú quý vinh hoa! 🎋'],high:['Đại cát đại lợi! 💰'],special:['🎊 Ô đặc biệt! Chúc mừng bạn đã trúng giải lớn!']}};
+const state={envelopes:[],totalOpened:0,totalAmount:0,sb:null,playerName:'',myEnvId:null,hasOpened:false,playerCount:0};
+const $=id=>document.getElementById(id);
+const grid=$('envelope-grid');
+function setLoading(msg){$('ld-msg').textContent=msg;}
+function setErr(msg){const e=$('ld-err');e.textContent=msg;e.style.display='block';}
+function hideLoading(){const el=$('loading-screen');el.classList.add('hidden');setTimeout(()=>el.style.display='none',800);}
+function setSynced(ok){$('sync-dot').className='sync-dot'+(ok?' live':'');$('sync-lbl').textContent=ok?'Đang đồng bộ':'Mất kết nối';}
+function getEmoji(v){if(v>=100)return'🎊';if(v>=50)return'💰';if(v>=20)return'🏮';if(v>=10)return'🧧';return'🌸';}
+function getMessage(v,sp){if(sp){const m=CFG.messages.special||['🎊'];return m[Math.floor(Math.random()*m.length)];}const m=v<=5?CFG.messages.low:v<=15?CFG.messages.mid:CFG.messages.high;return m[Math.floor(Math.random()*m.length)];}
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+async function boot(){
+  if(!ROOM_ID){setErr('❌ Không tìm thấy phòng. Kiểm tra lại link!');return;}
+  state.sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  setLoading('Đang tải phòng...');
+  const{data:room,error:re}=await state.sb.from('rooms').select('*').eq('id',ROOM_ID).single();
+  if(re||!room){setErr('❌ Không tìm thấy phòng lì xì này!');return;}
+  document.title='🧧 '+room.title;
+  $('site-title').textContent=room.title;
+  $('site-subtitle').textContent=room.subtitle||'';
+  $('nc-title').textContent=room.title;
+  $('nc-sub').textContent=room.subtitle||'';
+  $('nc-emoji').textContent=room.emoji||'🧧';
+  if(room.host_name){$('host-badge').style.display='flex';$('host-name-display').textContent=room.host_name;$('nc-host').style.display='block';$('nc-host').innerHTML='Phòng của <strong>'+escHtml(room.host_name)+'</strong>';}
+  if(room.config){
+    Object.assign(CFG,room.config);
+    if(room.config.messages) CFG.messages={...CFG.messages,...room.config.messages};
+    if(room.config.footerText) $('footer-text').textContent=room.config.footerText;
+    if(room.config.sectionLabel) $('section-label').textContent=room.config.sectionLabel;
+    if(room.config.gameClosedTitle) $('gc-title').textContent=room.config.gameClosedTitle;
+    if(room.config.gameClosedMsg) $('gc-msg').textContent=room.config.gameClosedMsg;
+  }
+  if(!room.is_open){hideLoading();$('game-closed-overlay').classList.add('show');return;}
+  setLoading('Đang tải phong bì...');
+  const{data:envs,error:ee}=await state.sb.from('envelopes').select('*').eq('room_id',ROOM_ID).order('position');
+  if(ee){setErr('❌ '+ee.message);return;}
+  state.envelopes=envs.map(r=>({id:r.position+1,displayValue:r.display_value,realValue:r.real_value,isSpecial:r.is_special,opened:r.opened,openedAt:r.opened_at,openedBy:r.opened_by||'',_dbId:r.id}));
+  state.totalOpened=state.envelopes.filter(e=>e.opened).length;
+  state.totalAmount=state.envelopes.filter(e=>e.opened).reduce((s,e)=>s+e.displayValue,0);
+  const{count}=await state.sb.from('events').select('id',{head:true,count:'exact'}).eq('room_id',ROOM_ID);
+  state.playerCount=count||0;
+  subscribeRealtime();setSynced(true);hideLoading();updateStats();renderGrid();spawnPetals();
+  if(!CFG.showPlayerCount) $('stat-players-chip').style.display='none';
+  const saved=sessionStorage.getItem(SESSION_KEY);
+  if(saved){state.playerName=saved;showGreeting(saved);const mine=state.envelopes.find(e=>e.opened&&e.openedBy===saved);if(mine){state.hasOpened=true;state.myEnvId=mine._dbId;showBanner(saved,mine.displayValue);}$('name-modal').classList.add('hidden');}
+}
+function subscribeRealtime(){
+  state.sb.channel('room-'+ROOM_ID)
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'envelopes',filter:'room_id=eq.'+ROOM_ID},(p)=>{
+      const r=p.new;if(!r.opened)return;
+      const env=state.envelopes.find(e=>e._dbId===r.id);if(!env||env.opened)return;
+      env.opened=true;env.openedAt=r.opened_at;env.openedBy=r.opened_by||'';
+      state.totalOpened++;state.totalAmount+=env.displayValue;state.playerCount++;
+      const card=grid.querySelector('[data-id="'+env.id+'"]');
+      if(card&&!card.classList.contains('opened')){card.classList.add('opened');card._handler&&card.removeEventListener('click',card._handler);}
+      updateStats();
+    })
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'rooms',filter:'id=eq.'+ROOM_ID},(p)=>{if(!p.new.is_open) $('game-closed-overlay').classList.add('show');})
+    .subscribe(s=>setSynced(s==='SUBSCRIBED'));
+}
+function renderGrid(){
+  grid.innerHTML='';
+  state.envelopes.forEach((env,idx)=>{
+    const card=document.createElement('div');
+    card.className='envelope-card'+(env.opened?' opened':'');
+    card.dataset.id=env.id;
+    card.style.animationDelay=idx*0.03+'s';
+    card.setAttribute('role','listitem');
+    card.innerHTML='<div class="env-front"><div class="amount-reveal"><span class="amount-emoji">'+getEmoji(env.displayValue)+'</span><span class="amount-number">'+env.displayValue+'k</span><span class="amount-unit">nghìn đồng</span>'+(env.openedBy?'<span class="amount-by">'+escHtml(env.openedBy)+'</span>':'')+'</div><span class="env-icon">🧧</span><span class="env-num">#'+String(env.id).padStart(2,'0')+'</span><div class="env-shimmer"></div></div>';
+    if(!env.opened){const h=()=>handleClick(card,env);card._handler=h;card.addEventListener('click',h);}
+    grid.appendChild(card);
+  });
+}
+function handleClick(card,env){
+  if(env.opened)return;
+  if(!state.playerName){$('name-modal').classList.remove('hidden');$('nm-input').focus();return;}
+  if(state.hasOpened){flashBanner();return;}
+  openEnvelope(card,env);
+}
+async function openEnvelope(card,env){
+  env.opened=true;env.openedBy=state.playerName;
+  state.hasOpened=true;state.myEnvId=env._dbId;
+  state.totalOpened++;state.totalAmount+=env.displayValue;state.playerCount++;
+  card.classList.add('opened');
+  card._handler&&card.removeEventListener('click',card._handler);
+  const ar=card.querySelector('.amount-reveal');
+  if(ar&&!ar.querySelector('.amount-by')){const s=document.createElement('span');s.className='amount-by';s.textContent=state.playerName;ar.appendChild(s);}
+  updateStats();
+  try{
+    const now=new Date().toISOString();env.openedAt=now;
+    await state.sb.from('envelopes').update({opened:true,opened_at:now,opened_by:state.playerName}).eq('id',env._dbId);
+    await state.sb.from('events').insert({room_id:ROOM_ID,envelope_id:env._dbId,display_value:env.displayValue,real_value:env.realValue,is_special:env.isSpecial,player_name:state.playerName,created_at:now});
+    await state.sb.from('rooms').update({opened_count:state.totalOpened}).eq('id',ROOM_ID);
+  }catch(e){
+    env.opened=false;env.openedBy='';state.hasOpened=false;state.myEnvId=null;
+    state.totalOpened--;state.totalAmount-=env.displayValue;state.playerCount--;
+    card.classList.remove('opened');
+    const h=()=>handleClick(card,env);card._handler=h;card.addEventListener('click',h);
+    updateStats();alert('⚠ Lỗi lưu dữ liệu. Thử lại!');return;
+  }
+  showBanner(state.playerName,env.displayValue);
+  setTimeout(()=>showReveal(env),350);
+}
+function showReveal(env){
+  $('reveal-emoji').textContent=getEmoji(env.displayValue);
+  $('reveal-amount').textContent=env.displayValue;
+  $('reveal-message').textContent=getMessage(env.displayValue,env.isSpecial);
+  $('reveal-overlay').classList.add('show');spawnConfetti();
+  $('reveal-close-btn').onclick=()=>{$('reveal-overlay').classList.remove('show');if(env.isSpecial)showAdminHint(env.realValue);};
+}
+function showAdminHint(rv){$('admin-hint')?.remove();const d=document.createElement('div');d.id='admin-hint';d.innerHTML='<div class="admin-hint-card"><span class="hint-icon">🔐</span><p class="hint-title">Lì Xì Đặc Biệt!</p><p class="hint-sub">Mệnh giá thực: <strong>'+rv+'k</strong> 🏆</p><p class="hint-desc">Liên hệ chủ phòng để xác nhận và nhận thưởng.</p><div class="hint-btns"><button class="hint-btn-outline" onclick="document.getElementById(\'admin-hint\').remove()">Đóng</button></div></div>';document.body.appendChild(d);}
+function updateStats(){$('stat-opened').textContent=state.totalOpened;$('stat-total').textContent=state.envelopes.length;$('stat-amount').textContent=state.totalAmount;$('stat-players').textContent=state.playerCount;}
+function showGreeting(name){$('greeting-bar').style.display='block';$('greeting-name').textContent=name;}
+function showBanner(name,val){$('banner-text').textContent='Bạn ('+name+') đã bốc được '+val+'k! 🎉';const b=$('already-opened-banner');b.style.display='flex';b.classList.add('show');}
+function flashBanner(){const b=$('already-opened-banner');b.classList.remove('show');requestAnimationFrame(()=>b.classList.add('show'));}
+$('nm-input').addEventListener('keydown',e=>{if(e.key==='Enter')$('nm-btn').click();});
+$('nm-btn').addEventListener('click',()=>{
+  const name=$('nm-input').value.trim();
+  if(!name||name.length<2){$('nm-err').textContent='⚠ Nhập tên ít nhất 2 ký tự';return;}
+  const existing=state.envelopes.find(e=>e.opened&&e.openedBy===name);
+  if(existing){state.playerName=name;state.hasOpened=true;state.myEnvId=existing._dbId;sessionStorage.setItem(SESSION_KEY,name);$('nm-err').textContent='';$('nm-input').value='';$('name-modal').classList.add('hidden');showGreeting(name);showBanner(name,existing.displayValue);return;}
+  state.playerName=name;sessionStorage.setItem(SESSION_KEY,name);$('name-modal').classList.add('hidden');showGreeting(name);
+});
+const CC=['#f5c842','#ff6b6b','#ff4500','#fde068','#c0001f','#f1c40f','#3ecf8e'];
+function spawnConfetti(){const count=CFG.confettiCount||80;const f=document.createDocumentFragment();for(let i=0;i<count;i++){const el=document.createElement('div');el.className='confetti';el.style.cssText='left:'+(20+Math.random()*60)+'%;top:'+(15+Math.random()*30)+'%;background:'+CC[Math.floor(Math.random()*CC.length)]+';width:'+(6+Math.random()*8)+'px;height:'+(10+Math.random()*12)+'px;--drift:'+((Math.random()-.5)*500)+'px;--dur:'+(2.5+Math.random()*2)+'s;--delay:'+Math.random()*0.6+'s;border-radius:'+(Math.random()>.5?'50%':'3px');f.appendChild(el);setTimeout(()=>el.remove(),5000);}document.body.appendChild(f);}
+function spawnPetals(){const P=['🌸','🌺','🍀','⭐','✨','💫'];for(let i=0;i<20;i++){const el=document.createElement('div');el.className='petal';el.textContent=P[Math.floor(Math.random()*P.length)];el.style.cssText='left:'+Math.random()*100+'%;animation-duration:'+(8+Math.random()*12)+'s;animation-delay:'+Math.random()*10+'s;font-size:'+(0.7+Math.random()*0.9)+'rem;opacity:0';document.body.appendChild(el);}}
+document.addEventListener('DOMContentLoaded',boot);
+</script>
+</body>
+</html>
